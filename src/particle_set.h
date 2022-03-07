@@ -69,7 +69,10 @@ public:
     }
 
     void set_particle_pos(const vec2d_t& pos, int32_t i);
-    void simulation_timestep(scalar_t deltaT, scalar_t gravitationalConstant, scalar_t distanceAdded);
+    void simulation_timestep(int32_t particleindex, scalar_t deltaT, scalar_t gravitationalConstant, scalar_t distanceAdded);
+    void update_particle_position(int32_t particleindex, scalar_t deltaT);
+    void threaded_timestep(int32_t threadnum, int32_t threadcnt, scalar_t deltaT, scalar_t gravitationalConstant, scalar_t distanceAdded);
+    void threaded_position_update(int32_t threadnum, int32_t threadcnt, scalar_t deltaT);
 };
 
 #endif

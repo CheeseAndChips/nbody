@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -Wall -std=c++17 -O2
-LDFLAGS = -lavcodec -lavutil
+LDFLAGS = -lavcodec -lavutil -lpthread
 SRCDIR = src
 BINDIR = bin
 

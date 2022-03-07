@@ -5,11 +5,19 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <thread>
 #include <chrono>
 
 scalar_t randomflt()
 {
     return (scalar_t)rand() / RAND_MAX;
+}
+
+std::string format_time(double time, int cnt){
+    int total = time * cnt;
+    std::string ans = "";
+    if(total > 60) ans += std::to_string(total / 60) + " m ";
+    return ans + std::to_string(total % 60) + " s";
 }
 
 int main()
@@ -21,6 +29,7 @@ int main()
     particle_wrapper pset(N);
     int fps = 60;
     int time = 30;
+    int threadcnt = 8;
 
     video_encoder enc("/media/RAMDISK/output.264", video_width, video_height, fps, codec_settings_t("libx264", "slow", 0));
 
@@ -48,10 +57,9 @@ int main()
 
     for(int T = 0; T < fps*time; T++)
     {
-        std::cout << "Starting timestep " << T << std::endl;
-        pset.do_simulation_timestep(1.0/fps, 1e-4 / 2, 1e-3);
+        auto frame_start = std::chrono::high_resolution_clock::now();
+        pset.do_simulation_timestep(threadcnt, 1.0/fps, 1e-4 / 2, 1e-2);
 
-        std::cout << "Creating image" << std::endl;
         for(auto& row : data){
             for(auto& cell : row) cell = 0;
         }
@@ -66,10 +74,12 @@ int main()
             }
         }
 
-        std::cout << "Updating pixel data" << std::endl;
         enc.update_pixels(data);
-        std::cout << "Writing out frame data" << std::endl;
         enc.write_frame();
+
+        auto frame_end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> timetaken = frame_end - frame_start;
+        std::cout << "Time taken for entire frame: " << timetaken.count() << " estimated left: " << format_time(timetaken.count(), fps*time - T - 1) << std::endl;
     }
 
     auto end = std::chrono::high_resolution_clock::now();
