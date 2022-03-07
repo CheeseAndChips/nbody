@@ -15,7 +15,7 @@ void particle_set_t::simulation_timestep(scalar_t deltaT, scalar_t gravitational
     for(int32_t i = 0; i < n; i++) {
         for(int32_t j = i + 1; j < n; j++) {
             scalar_t distance = sqrt(distance_sqr(positions[i], positions[j])) + distanceAdded;
-            scalar_t force = gravitationalConstant * mass[i] * mass[j] / distance;
+        scalar_t force = gravitationalConstant * mass[i] * mass[j] / (distance*distance);
 
             vec2d_t direction(
                 positions[j].x - positions[i].x,
