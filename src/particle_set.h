@@ -1,16 +1,21 @@
-#ifndef _PARTICLE_H
-#define _PARTICLE_H
+#ifndef _PARTICLE_SET_H
+#define _PARTICLE_SET_H
 
 #include <utility>
 #include <cstdint>
 
 typedef float scalar_t;
 
+#ifndef __CUDACC__
+#define __host__
+#define __device__
+#endif
+
 struct vec2d_t
 {
     scalar_t x, y;
-    vec2d_t() : x(0), y(0) { }
-    vec2d_t(scalar_t x, scalar_t y) : x(x), y(y) { }
+    __host__ __device__ vec2d_t() : x(0), y(0) { }
+    __host__ __device__ vec2d_t(scalar_t x, scalar_t y) : x(x), y(y) { }
 };
 
 class particle_set_t
@@ -23,12 +28,7 @@ public:
 
     particle_set_t() : n(0), positions(nullptr), velocities(nullptr), mass(nullptr) { }
 
-    particle_set_t(int32_t n) : n(n)
-    {
-        positions = new vec2d_t[n];
-        velocities = new vec2d_t[n];
-        mass = new scalar_t[n];
-    }
+    particle_set_t(int32_t n) : n(n), positions(new vec2d_t[n]), velocities(new vec2d_t[n]), mass(new scalar_t[n]) { }
 
     ~particle_set_t()
     {
@@ -67,12 +67,6 @@ public:
         std::swap(this->mass, other.mass);
         return *this;
     }
-
-    void set_particle_pos(const vec2d_t& pos, int32_t i);
-    void simulation_timestep(int32_t particleindex, scalar_t deltaT, scalar_t gravitationalConstant, scalar_t distanceAdded);
-    void update_particle_position(int32_t particleindex, scalar_t deltaT);
-    void threaded_timestep(int32_t threadnum, int32_t threadcnt, scalar_t deltaT, scalar_t gravitationalConstant, scalar_t distanceAdded);
-    void threaded_position_update(int32_t threadnum, int32_t threadcnt, scalar_t deltaT);
 };
 
 #endif

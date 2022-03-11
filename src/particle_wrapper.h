@@ -2,10 +2,11 @@
 #define _PARTICLE_WRAPPER_H
 #include "particle_set.h"
 #include <fstream>
+#include "simulation_util.h"
 
 class particle_wrapper
 {
-private:
+protected:
     particle_set_t pset;
 
     void construct_from_file(std::istream& file);
@@ -14,12 +15,14 @@ public:
     particle_wrapper(int32_t n);
     particle_wrapper(std::istream& file);
     particle_wrapper(const std::string& filename);
+    particle_wrapper(const particle_set_t& pset);
 
-    void do_simulation_timestep(int threadcnt, scalar_t deltaT, scalar_t bigG, scalar_t distanceAdded);
     void dump_to_file(std::ostream& file);
     void dump_to_file(const std::string& filename);
-    void set_particle_values(int32_t i, const vec2d_t& pos, const vec2d_t& vel, scalar_t mass);
-    vec2d_t get_particle_position(int32_t i);
+    virtual void set_particle_values(int32_t i, const vec2d_t& pos, const vec2d_t& vel, scalar_t mass);
+    virtual vec2d_t get_particle_position(int32_t i);
+
+    virtual void do_timestep(simulation_settings_t& settings) = 0;
 };
 
 #endif

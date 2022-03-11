@@ -1,7 +1,5 @@
 #include "particle_wrapper.h"
 #include "file_util.h"
-#include <vector>
-#include <thread>
 
 void particle_wrapper::construct_from_file(std::istream& file)
 {
@@ -20,26 +18,7 @@ particle_wrapper::particle_wrapper(const std::string& filename)
     construct_from_file(file);
 }
 
-
-void particle_wrapper::do_simulation_timestep(int threadcnt, scalar_t deltaT, scalar_t bigG, scalar_t distanceAdded)
-{
-    std::vector<std::thread> threads;
-    for(int i = 0; i < threadcnt; i++)
-    {
-        threads.push_back(std::thread(&particle_set_t::threaded_timestep, &pset, i, threadcnt, deltaT, bigG, distanceAdded));
-    }
-
-    for(std::thread& t : threads) t.join();
-    threads.clear();
-
-    for(int i = 0; i < threadcnt; i++)
-    {
-        threads.push_back(std::thread(&particle_set_t::threaded_position_update, &pset, i, threadcnt, deltaT));
-    }
-
-    for(std::thread& t : threads) t.join();
-    threads.clear();
-}
+particle_wrapper::particle_wrapper(const particle_set_t& pset) : pset(pset) { }
 
 void particle_wrapper::dump_to_file(std::ostream& file)
 {
