@@ -7,18 +7,19 @@ __device__ __host__ scalar_t distance_sqr(const vec2d_t& a, const vec2d_t& b) {
     return A*A + B*B;
 }
 
-__device__ __host__ void simulation_timestep(int32_t j, int32_t n, vec2d_t* positions, vec2d_t* velocities, scalar_t* mass, simulation_settings_t& settings) {
+__device__ __host__ void simulation_timestep(int32_t j, int32_t n, const vec2d_t* positions, vec2d_t* velocities, const scalar_t* mass, const simulation_settings_t& settings) {
+    scalar_t coeff = settings.bigG * settings.deltaT;
+    scalar_t jx = positions[j].x;
+    scalar_t jy = positions[j].y;
     for(int32_t i = 0; i < n; i++) {
-        scalar_t x = (positions[i].x - positions[j].x);
-        scalar_t y = (positions[i].y - positions[j].y);
+        scalar_t x = (positions[i].x - jx);
+        scalar_t y = (positions[i].y - jy);
 
         scalar_t distance = x*x + y*y + settings.distanceAdded;
-
         scalar_t invDistance = rsqrtf(distance);
         scalar_t invDistanceCube = invDistance * invDistance * invDistance;
 
-        scalar_t s = settings.bigG * mass[i] * settings.deltaT * invDistanceCube;
-        
+        scalar_t s = coeff * mass[i] * invDistanceCube;
         velocities[j].x += x * s;
         velocities[j].y += y * s;
     }
