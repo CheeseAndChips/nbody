@@ -17,6 +17,8 @@ private:
 
     bool device_outdated = false;
     bool host_outdated = false;
+
+    int padded_n;
 public:
     particle_wrapper_gpu(int n) : particle_wrapper(n) { setup_cuda_memory(); }
     particle_wrapper_gpu(std::istream& file) : particle_wrapper(file) { setup_cuda_memory(); }

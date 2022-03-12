@@ -51,13 +51,13 @@ __global__ void simulation_gpu(int32_t n, vec2d_t* positions, vec2d_t* velocitie
     __shared__ scalar_t masscache[THREAD_COUNT];
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if(i < n){
-        for(int j = 0; j < n / THREAD_COUNT; j++){
-            poscache[threadIdx.x] = positions[j * THREAD_COUNT + threadIdx.x];
-            masscache[threadIdx.x] = mass[j * THREAD_COUNT + threadIdx.x];
-            __syncthreads();
-            simulation_timestep(THREAD_COUNT, positions[i], velocities[i], poscache, masscache, settings);
-        }
+    for(int j = 0; j < n / THREAD_COUNT; j++){
+        int k = j * THREAD_COUNT + threadIdx.x;
+
+        poscache[threadIdx.x] = positions[k];
+        masscache[threadIdx.x] = mass[k];
+        __syncthreads();
+        simulation_timestep(THREAD_COUNT, positions[i], velocities[i], poscache, masscache, settings);
     }
 }
 

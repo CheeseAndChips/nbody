@@ -5,9 +5,13 @@
 
 void particle_wrapper_gpu::setup_cuda_memory() {
     int n = pset.n;
-    cudaMalloc(&d_positions, n * sizeof(vec2d_t));
-    cudaMalloc(&d_velocities, n * sizeof(vec2d_t));
-    cudaMalloc(&d_mass, n * sizeof(scalar_t));
+    padded_n = n + (n % THREAD_COUNT != 0 ? THREAD_COUNT : 0); 
+
+    cudaMalloc(&d_positions, padded_n * sizeof(vec2d_t));
+    cudaMalloc(&d_velocities, padded_n * sizeof(vec2d_t));
+    cudaMalloc(&d_mass, padded_n * sizeof(scalar_t));
+
+    cudaMemset(d_mass, 0, padded_n * sizeof(scalar_t)); // ensure that padded particles have mass of 0
     device_outdated = true;
 }
 
@@ -40,9 +44,9 @@ void particle_wrapper_gpu::do_timestep(simulation_settings_t& settings)
 {
     if(this->device_outdated) host_to_device();
 
-    int blockcnt = (pset.n + THREAD_COUNT - 1) / THREAD_COUNT;
-    simulation_gpu<<<blockcnt, THREAD_COUNT>>>(pset.n, d_positions, d_velocities, d_mass, settings);
-    posupdate_gpu<<<blockcnt, THREAD_COUNT>>>(pset.n, d_positions, d_velocities, settings);
+    int blockcnt = padded_n / THREAD_COUNT;
+    simulation_gpu<<<blockcnt, THREAD_COUNT>>>(padded_n, d_positions, d_velocities, d_mass, settings);
+    posupdate_gpu<<<blockcnt, THREAD_COUNT>>>(padded_n, d_positions, d_velocities, settings);
     this->host_outdated = true;
     cudaDeviceSynchronize();
     device_to_host();
