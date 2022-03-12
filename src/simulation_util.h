@@ -2,6 +2,23 @@
 #define _SIMULATION_UTIL_H
 #include "particle_set.h"
 #include "math.h"
+#include <stdio.h>
+#include <iostream>
+
+#ifdef __CUDACC__
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess) 
+   {
+        std::cerr << "GPUassert: " << cudaGetErrorString(code) << " " << file << " " << line << std::endl;
+        if (abort) exit(code);
+   }
+}
+#endif
 
 #ifndef __CUDACC__
 #define __device__

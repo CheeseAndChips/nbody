@@ -2,8 +2,8 @@ USE_CUDA = true
 
 CC = g++
 NVCC = /usr/local/cuda/bin/nvcc
-CFLAGS = -Wall -std=c++17 -O2
-NVCCFLAGS = -std=c++17 -O2
+CFLAGS = -I/usr/local/cuda/include -Wall -std=c++17 -O2
+NVCCFLAGS = -std=c++17 -O2 -lineinfo
 LDFLAGS = -lavcodec -lavutil -lpthread
 SRCDIR = src
 BINDIR = bin

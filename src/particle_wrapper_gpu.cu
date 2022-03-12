@@ -40,10 +40,11 @@ void particle_wrapper_gpu::do_timestep(simulation_settings_t& settings)
 {
     if(this->device_outdated) host_to_device();
 
-    simulation_gpu<<<64, 256>>>(pset.n, d_positions, d_velocities, d_mass, settings);
-    posupdate_gpu<<<64, 256>>>(pset.n, d_positions, d_velocities, settings);
+    simulation_gpu<<<1024, 1024>>>(pset.n, d_positions, d_velocities, d_mass, settings);
+    posupdate_gpu<<<64, 128>>>(pset.n, d_positions, d_velocities, settings);
     this->host_outdated = true;
     cudaDeviceSynchronize();
+    device_to_host();
 }
 
 void particle_wrapper_gpu::set_particle_values(int32_t i, const vec2d_t& pos, const vec2d_t& vel, scalar_t mass)

@@ -20,17 +20,18 @@ int nbody_settings::thread_count;
 
 const int video_width = 1920;
 const int video_height = 1080;
-const int N = 4;
-const int fps = 60;
-const int runtime = 10;
-const double bigG = 1e-1;
+const int N = 100000;
+const int fps = 5;
+const int runtime = 1;
+const double bigG = 1e-5;
 const double softening = 1e-2;
 const scalar_t coord_visible = 3.0f; // [-coord_visible; coord_visible] will be visible smaller axis
 
 scalar_t scalevalue = (std::min(video_height, video_width) / 2) / coord_visible;
 
+#define TIMETAKEN(t1, t2) (std::chrono::duration<double>(t2 - t1).count())
 
-void perform(int totalcnt, video_encoder& enc, particle_wrapper* pset, simulation_settings_t& settings)
+void perform(int totalcnt, video_encoder* enc, particle_wrapper* pset, simulation_settings_t& settings)
 {
     auto start = std::chrono::high_resolution_clock::now();
     std::vector<std::vector<uint8_t>> data(video_width, std::vector<uint8_t>(video_height));
@@ -40,6 +41,7 @@ void perform(int totalcnt, video_encoder& enc, particle_wrapper* pset, simulatio
         auto frame_start = std::chrono::high_resolution_clock::now();
         pset->do_timestep(settings);
 
+        auto cuda_end = std::chrono::high_resolution_clock::now();
         for(auto& row : data){
             for(auto& cell : row) cell = 0;
         }
@@ -53,13 +55,17 @@ void perform(int totalcnt, video_encoder& enc, particle_wrapper* pset, simulatio
                 data.at(x).at(y) = 255;
             }
         }
+        auto framecreation_end = std::chrono::high_resolution_clock::now();
 
-        enc.update_pixels(data);
-        enc.write_frame();
+        if(enc != nullptr)
+        {
+            enc->update_pixels(data);
+            enc->write_frame();
+        }
 
         auto frame_end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> timetaken = frame_end - frame_start;
-        std::cout << "Time taken for entire frame: " << timetaken.count() << std::endl;
+        std::cout << "Cuda " << TIMETAKEN(frame_start, cuda_end) << " frame creation " << TIMETAKEN(cuda_end, framecreation_end);
+        std::cout << " encoding " << TIMETAKEN(framecreation_end, frame_end) << std::endl;
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -69,10 +75,10 @@ void perform(int totalcnt, video_encoder& enc, particle_wrapper* pset, simulatio
 
 int main()
 {
-    nbody_settings::thread_count = 1;
+    nbody_settings::thread_count = 8;
 
-    video_encoder enc1("/media/RAMDISK/output1.264", video_width, video_height, fps, codec_settings_t("libx264", "slow", 0));
-    video_encoder enc2("/media/RAMDISK/output2.264", video_width, video_height, fps, codec_settings_t("libx264", "slow", 0));
+    // video_encoder enc1("/media/RAMDISK/output1.264", video_width, video_height, fps, codec_settings_t("libx264", "slow", 0));
+    // video_encoder enc2("/media/RAMDISK/output2.264", video_width, video_height, fps, codec_settings_t("libx264", "slow", 0));
 
     particle_set_t pset(N);
 
@@ -95,9 +101,9 @@ int main()
         pset.mass[i] = mass;
     }
 
-    particle_wrapper_cpu psetcpu(pset);
+    // particle_wrapper_cpu psetcpu(pset);
     particle_wrapper_gpu psetgpu(pset);
 
-    perform(fps*runtime, enc1, &psetcpu, settings);
-    perform(fps*runtime, enc2, &psetgpu, settings);
+    //perform(fps*runtime, enc1, &psetcpu, settings);
+    perform(fps*runtime, nullptr, &psetgpu, settings);
 }
