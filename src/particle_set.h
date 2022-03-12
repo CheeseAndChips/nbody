@@ -14,7 +14,7 @@ typedef float scalar_t;
 struct vec2d_t
 {
     scalar_t x, y;
-    __host__ __device__ vec2d_t() : x(0), y(0) { }
+    vec2d_t() = default;
     __host__ __device__ vec2d_t(scalar_t x, scalar_t y) : x(x), y(y) { }
 };
 
