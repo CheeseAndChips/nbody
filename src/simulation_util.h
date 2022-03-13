@@ -6,7 +6,7 @@
 #include <iostream>
 
 #ifdef __CUDACC__
-#define THREAD_COUNT 1024
+#define THREAD_COUNT 256
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
