@@ -3,6 +3,7 @@
 
 #include <utility>
 #include <cstdint>
+#include <fstream>
 
 typedef float scalar_t;
 
@@ -20,15 +21,24 @@ struct vec2d_t
 
 class particle_set_t
 {
+private:
+    void allocate_arrays();
+    void construct_from_file(std::istream& file);
 public:
-    int32_t n;
-    vec2d_t* positions;
-    vec2d_t* velocities;
-    scalar_t* mass;
+    int32_t n = 0;
+    vec2d_t* positions = nullptr;
+    vec2d_t* velocities = nullptr;
+    scalar_t* mass = nullptr;
 
-    particle_set_t() : n(0), positions(nullptr), velocities(nullptr), mass(nullptr) { }
+    particle_set_t() = default;
 
-    particle_set_t(int32_t n) : n(n), positions(new vec2d_t[n]), velocities(new vec2d_t[n]), mass(new scalar_t[n]) { }
+    particle_set_t(int32_t n) : n(n) { allocate_arrays(); }
+
+    particle_set_t(std::istream& file);
+    particle_set_t(const std::string& filename);
+
+    void dump_to_file(std::ostream& file);
+    void dump_to_file(const std::string& filename);
 
     ~particle_set_t()
     {

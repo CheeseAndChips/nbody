@@ -12,7 +12,6 @@ void particle_wrapper_gpu::setup_cuda_memory() {
     cudaMalloc(&d_mass, padded_n * sizeof(scalar_t));
 
     cudaMemset(d_mass, 0, padded_n * sizeof(scalar_t)); // ensure that padded particles have mass of 0
-    device_outdated = true;
 }
 
 void particle_wrapper_gpu::host_to_device()

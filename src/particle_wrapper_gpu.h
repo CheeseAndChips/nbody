@@ -15,7 +15,7 @@ private:
     void host_to_device();
     void device_to_host();
 
-    bool device_outdated = false;
+    bool device_outdated = true;
     bool host_outdated = false;
 
     int padded_n;

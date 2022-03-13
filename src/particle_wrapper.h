@@ -9,16 +9,13 @@ class particle_wrapper
 protected:
     particle_set_t pset;
 
-    void construct_from_file(std::istream& file);
-
 public:
     particle_wrapper(int32_t n);
-    particle_wrapper(std::istream& file);
-    particle_wrapper(const std::string& filename);
     particle_wrapper(const particle_set_t& pset);
 
-    void dump_to_file(std::ostream& file);
-    void dump_to_file(const std::string& filename);
+    void dump_to_file(std::ostream& file) { pset.dump_to_file(file); }
+    void dump_to_file(const std::string& filename) { pset.dump_to_file(filename); }
+
     virtual void set_particle_values(int32_t i, const vec2d_t& pos, const vec2d_t& vel, scalar_t mass);
     virtual vec2d_t get_particle_position(int32_t i);
 
