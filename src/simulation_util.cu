@@ -1,6 +1,12 @@
 #include "simulation_util.h"
 #include <stdio.h>
 
+#ifndef USING_CUDA
+scalar_t rsqrtf(scalar_t x){
+    return 1 / sqrt(x);
+}
+#endif
+
 __device__ __host__ scalar_t distance_sqr(const vec2d_t& a, const vec2d_t& b) {
     scalar_t A = a.x - b.x;
     scalar_t B = a.y - b.y;
@@ -45,6 +51,7 @@ void posupdate_cpu(int32_t n, int32_t threadnum, int32_t threadcnt, vec2d_t* pos
     }
 }
 
+#ifdef USING_CUDA
 __global__ void simulation_gpu(int32_t n, vec2d_t* positions, vec2d_t* velocities, scalar_t* mass, simulation_settings_t settings)
 {
     __shared__ vec2d_t poscache[THREAD_COUNT];
@@ -68,3 +75,4 @@ __global__ void posupdate_gpu(int32_t n, vec2d_t* positions, vec2d_t* velocities
         update_positions(i, positions, velocities, settings.deltaT);
     }
 }
+#endif

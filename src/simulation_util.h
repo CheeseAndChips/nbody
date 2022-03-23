@@ -38,7 +38,7 @@ struct simulation_settings_t{
 
 void simulation_cpu(int32_t n, int32_t threadnum, int32_t threadcnt, vec2d_t* positions, vec2d_t* velocities, scalar_t* mass, simulation_settings_t& settings);
 void posupdate_cpu(int32_t n, int32_t threadnum, int32_t threadcnt, vec2d_t* positions, vec2d_t* velocities, simulation_settings_t& settings);
-#ifdef __CUDACC__
+#ifdef USING_CUDA
 __global__ void simulation_gpu(int32_t n, vec2d_t* positions, vec2d_t* velocities, scalar_t* mass, simulation_settings_t settings);
 __global__ void posupdate_gpu(int32_t n, vec2d_t* positions, vec2d_t* velocities, simulation_settings_t settings);
 #endif

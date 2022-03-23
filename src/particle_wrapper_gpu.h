@@ -1,3 +1,5 @@
+#ifdef USING_CUDA
+
 #ifndef _PARTICLE_WRAPPER_GPU_H
 #define _PARTICLE_WRAPPER_GPU_H
 #include "particle_wrapper.h"
@@ -38,6 +40,8 @@ public:
     void do_timestep(simulation_settings_t& settings);
 };
 
-__global__ void simulation_timestep_kernel(particle_set_t* pset);
+#endif
 
+#else
+#error "Trying to include GPU wrapper when compiling without CUDA."
 #endif

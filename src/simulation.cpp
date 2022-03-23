@@ -2,7 +2,9 @@
 #include <fstream>
 #include "particle_wrapper.h"
 #include "particle_wrapper_cpu.h"
+#ifdef USE_CUDA
 #include "particle_wrapper_gpu.h"
+#endif
 #include "encoder_util.h"
 #include <iostream>
 #include <sstream>

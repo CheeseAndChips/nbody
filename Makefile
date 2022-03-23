@@ -2,7 +2,8 @@ USE_CUDA = true
 
 CC = g++
 NVCC = /usr/local/cuda/bin/nvcc
-CFLAGS = -I/usr/local/cuda/include -Wall -std=c++17 -O2
+CUDA_INCLUDE_DIR = /usr/local/cuda/include
+CFLAGS = -Wall -std=c++17 -O2
 NVCCFLAGS = -std=c++17 -O2 -lineinfo
 LDFLAGS = -lavcodec -lavutil -lpthread
 SRCDIR = src
@@ -14,20 +15,17 @@ DEPS := $(OBJS:.o=.d)
 TARGET = $(BINDIR)/nbody
 
 CUDA_SRCS := $(wildcard $(SRCDIR)/*.cu)
-CUDA_OBJS := $(shell echo $(CUDA_SRCS:.cu=_cuobj.o) | sed 's|src/|bin/|g')
-CUDA_DEPS := $(CUDA_OBJS:_cuobj.o=.cd)
-CUDA_DEPS_REGULAR := $(CUDA_DEPS:.cd=.d)
+CUDA_OBJS := $(shell echo $(CUDA_SRCS:.cu=.o) | sed 's|src/|bin/|g')
+CUDA_DEPS := $(CUDA_OBJS:.o=.cd)
 
 ifeq ($(USE_CUDA), true)
+CFLAGS += -DUSING_CUDA -I$(CUDA_INCLUDE_DIR)
 LD = $(NVCC)
 LDFLAGS_EXTRA = $(NVCCFLAGS) --compiler-options "$(CFLAGS)"
 else
 LD = $(CC)
 LDFLAGS_EXTRA = $(CFLAGS)
 endif
-
-# SRCS += $(CUDA_SRCS)
-# OBJS += $(shell echo $(CUDA_SRCS:.cu=.o) | sed 's|src/|bin/|g')
 
 .PHONY: clean depend all
 
@@ -49,29 +47,34 @@ $(BINDIR)/ec:
 	@lscpu | grep Endian | grep -q "Little"
 	@touch $@
 
-# depend: $(DEPS) $(CUDA_DEPS) $(CUDA_DEPS_REGULAR)
 depend: $(DEPS) $(CUDA_DEPS)
 
 $(DEPS): $(BINDIR)/%.d: $(SRCDIR)/%.cpp
 	@rm -f "$@"
 	$(CC) -x c++ $(CFLAGS) -MT $(shell echo $@ | sed 's|\.d|.o|g') -MM $< >> $@
 
+ifeq ($(USE_CUDA), true)
 $(CUDA_DEPS): $(BINDIR)/%.cd: $(SRCDIR)/%.cu
 	@rm -f "$@"
-	$(NVCC) -x cu $(NVCCFLAGS) --compiler-options "$(CFLAGS)" -MT $(shell echo $@ | sed 's|\.cd|_cuobj.o|g') -MM $< >> $@
-
-# $(CUDA_DEPS_REGULAR): $(BINDIR)/%.d: $(SRCDIR)/%.cu
-#	@rm -f "$@"
-#	$(CC) -x c++ $(CFLAGS) -MT $(shell echo $@ | sed 's|\.d|.o|g') -MM $< >> $(shell echo $@ | sed 's|\.cd|.d|g')
+	$(NVCC) -x cu $(NVCCFLAGS) --compiler-options "$(CFLAGS)" -MT $(shell echo $@ | sed 's|\.cd|.o|g') -MM $< >> $@
+else
+$(CUDA_DEPS): $(BINDIR)/%.cd: $(SRCDIR)/%.cu
+	@rm -f "$@"
+	$(CC) -x c++ $(CFLAGS) -MT $(shell echo $@ | sed 's|\.cd|.o|g') -MM $< >> $@
+endif
 
 ifeq ($(filter $(MAKECMDGOALS),clean),)
 include $(DEPS)
 include $(CUDA_DEPS)
-# include $(CUDA_DEPS_REGULAR)
 endif
 
 $(OBJS):
 	$(CC) -x c++ $(CFLAGS) -c $< -o $@
 
+ifeq ($(USE_CUDA), true)
 $(CUDA_OBJS):
 	$(NVCC) -x cu $(NVCCFLAGS) --compiler-options "$(CFLAGS)" -c $< -o $@
+else
+$(CUDA_OBJS):
+	$(CC) -x c++ $(CFLAGS) -c $< -o $@
+endif

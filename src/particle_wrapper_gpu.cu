@@ -1,7 +1,7 @@
+#ifdef USING_CUDA
+
 #include "particle_wrapper_gpu.h"
 #include <iostream>
-
-#ifdef __CUDACC__
 
 void particle_wrapper_gpu::setup_cuda_memory() {
     int n = pset.n;
