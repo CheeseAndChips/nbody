@@ -3,11 +3,13 @@
     "configurations": [
         {
             "name": "Cuda C++",
-            "defines": ["__CUDACC__"]
+            "defines": ["__CUDACC__", "USING_CUDA"],
+            "includePath": ["/usr/local/cuda/include", "/usr/include/python3.10/"]
         },
         {
             "name": "C++",
-            "defines": []
+            "defines": [],
+            "includePath": ["/usr/include/python3.10/"]
         }
     ]
 }

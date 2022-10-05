@@ -1,6 +1,31 @@
 #include "encoder_util.h"
 
-video_encoder::video_encoder(std::string filename, int width, int height, int framerate, codec_settings_t codec_settings, int gop_size)
+void video_frame_t::clear_frame(){
+    for(auto& row : data){
+        for(auto& cell : row) cell = 0;
+    }
+}
+
+void video_frame_t::update_from_pset(particle_wrapper* pset, const camera_settings_t& settings) {
+    this->clear_frame();
+
+    for(int i = 0; i < pset->get_count(); i++){
+        vec2d_t pos = pset->get_particle_position(i);
+        int x = pos.x * settings.zoom + width / 2 + settings.center.x;
+        int y = pos.y * settings.zoom + height / 2 + settings.center.y;
+
+        if(x >= 0 && y >= 0 && x < width && y < height){
+            data.at(x).at(y) = 255;
+        }
+    }
+}
+
+void video_frame_t::write(video_encoder& enc) {
+    enc.update_pixels(data);
+    enc.write_frame();
+}
+
+video_encoder::video_encoder(const std::string& filename, int width, int height, int framerate, const codec_settings_t& codec_settings, int gop_size)
 {
     this->filename = filename;
     this->width = width;
@@ -82,6 +107,32 @@ video_encoder::~video_encoder()
     if(context != nullptr) avcodec_free_context(&context);
     if(frame != nullptr) av_frame_free(&frame);
     if(packet != nullptr) av_packet_free(&packet);
+}
+
+void video_encoder::write_from_wrapper(particle_wrapper& wrapper, const camera_settings_t& camera){
+    for(int y = 0; y < context->height; y++){
+        for(int x = 0; x < context->width; x++){
+            frame->data[0][y * frame->linesize[0] + x] = 0;
+        }
+    }
+
+    for(int i = 0; i < wrapper.get_count(); i++){
+        auto pos = wrapper.get_particle_position(i);
+        int x = (pos.x - camera.center.x) * camera.zoom + context->width / 2;
+        int y = (pos.y - camera.center.y) * camera.zoom + context->height / 2;
+
+        if(x < 0 || y < 0) continue;
+        if(x >= context->width || y >= context->height) continue;
+        frame->data[0][y * frame->linesize[0] + x] = 255;
+    }
+
+    for (int y = 0; y < context->height/2; y++) {
+        for (int x = 0; x < context->width/2; x++) {
+            frame->data[1][y * frame->linesize[1] + x] = 128;
+            frame->data[2][y * frame->linesize[2] + x] = 128;
+        }
+    }
+    write_frame();
 }
 
 void video_encoder::update_pixels(const std::vector<std::vector<uint8_t>>& data){
