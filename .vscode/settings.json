@@ -1,5 +1,6 @@
 {
     "makefile.extensionOutputFolder": "./.vscode",
+    "python.analysis.extraPaths": ["./bin"],
     "files.associations": {
         "avcodec.h": "c"
     }

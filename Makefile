@@ -5,7 +5,7 @@ NVCC = /usr/local/cuda/bin/nvcc
 CUDA_INCLUDE_DIR = /usr/local/cuda/include
 CFLAGS = -fPIC -Wall -std=c++17 -O2 -I/usr/include/python3.10/
 NVCCFLAGS = -std=c++17 -O2 -lineinfo
-LDFLAGS = -lpython3.10 -l:libboost_python310.so -lavcodec -lavutil -lpthread
+LDFLAGS = -lpython3.10 -l:libboost_python310.so -l:libboost_numpy310.so -lavcodec -lavutil -lpthread
 SRCDIR = src
 BINDIR = bin
 

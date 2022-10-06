@@ -5,6 +5,10 @@
 #include <fstream>
 #include <vector>
 #include "particle_wrapper.h"
+#include <boost/python/numpy.hpp>
+
+namespace np = boost::python::numpy;
+namespace p = boost::python;
 
 extern "C" {
     #include <libavcodec/avcodec.h>
@@ -56,23 +60,11 @@ public:
     video_encoder& operator=(const video_encoder& other) = delete;
     video_encoder& operator=(video_encoder&& other) = delete;
 
+    np::ndarray generate_pixels(particle_wrapper& wrapper, const camera_settings_t& camera);
+    void write_array(np::ndarray& arr);
     void write_from_wrapper(particle_wrapper& wrapper, const camera_settings_t& camera);
     void update_pixels(const std::vector<std::vector<uint8_t>>& data);
     void write_frame();
-};
-
-class video_frame_t {
-private:
-    int width, height;
-    std::vector<std::vector<uint8_t>> data;
-public:
-    video_frame_t(int width, int height) : width(width), height(height) {
-        data = std::vector<std::vector<uint8_t>>(width, std::vector<uint8_t>(height, 0));
-    };
-
-    void clear_frame();
-    void update_from_pset(particle_wrapper* pset, const camera_settings_t& settings);
-    void write(video_encoder& enc);
 };
 
 #ifdef av_err2str

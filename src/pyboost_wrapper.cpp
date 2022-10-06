@@ -8,8 +8,13 @@
 #include "particle_wrapper_gpu.h"
 #endif
 
+namespace p = boost::python;
+namespace np = boost::python::numpy;
+
 BOOST_PYTHON_MODULE(nbody)
 {
+    Py_Initialize();
+    np::initialize();
     using namespace boost::python;
     class_<simulation_settings_t>("SimulationSettings", init<scalar_t, scalar_t, scalar_t>())
         .def_readwrite("deltaT", &simulation_settings_t::deltaT)
@@ -31,6 +36,8 @@ BOOST_PYTHON_MODULE(nbody)
         .def("update_pixels", &video_encoder::update_pixels)
         .def("write_frame", &video_encoder::write_frame)
         .def("write_wrapper", &video_encoder::write_from_wrapper)
+        .def("write_array", &video_encoder::write_array)
+        .def("generate_pixels", &video_encoder::generate_pixels)
     ;
 
     class_<camera_settings_t>("CameraSettings", init<vec2d_t, scalar_t>())

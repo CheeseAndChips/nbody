@@ -1,30 +1,5 @@
 #include "encoder_util.h"
 
-void video_frame_t::clear_frame(){
-    for(auto& row : data){
-        for(auto& cell : row) cell = 0;
-    }
-}
-
-void video_frame_t::update_from_pset(particle_wrapper* pset, const camera_settings_t& settings) {
-    this->clear_frame();
-
-    for(int i = 0; i < pset->get_count(); i++){
-        vec2d_t pos = pset->get_particle_position(i);
-        int x = pos.x * settings.zoom + width / 2 + settings.center.x;
-        int y = pos.y * settings.zoom + height / 2 + settings.center.y;
-
-        if(x >= 0 && y >= 0 && x < width && y < height){
-            data.at(x).at(y) = 255;
-        }
-    }
-}
-
-void video_frame_t::write(video_encoder& enc) {
-    enc.update_pixels(data);
-    enc.write_frame();
-}
-
 video_encoder::video_encoder(const std::string& filename, int width, int height, int framerate, const codec_settings_t& codec_settings, int gop_size)
 {
     this->filename = filename;
@@ -109,21 +84,27 @@ video_encoder::~video_encoder()
     if(packet != nullptr) av_packet_free(&packet);
 }
 
-void video_encoder::write_from_wrapper(particle_wrapper& wrapper, const camera_settings_t& camera){
-    for(int y = 0; y < context->height; y++){
-        for(int x = 0; x < context->width; x++){
-            frame->data[0][y * frame->linesize[0] + x] = 0;
-        }
-    }
-
+np::ndarray video_encoder::generate_pixels(particle_wrapper& wrapper, const camera_settings_t& camera){
+    np::ndarray res = np::zeros(p::make_tuple(this->height, this->width), np::dtype::get_builtin<uint8_t>());
+    
     for(int i = 0; i < wrapper.get_count(); i++){
         auto pos = wrapper.get_particle_position(i);
         int x = (pos.x - camera.center.x) * camera.zoom + context->width / 2;
         int y = (pos.y - camera.center.y) * camera.zoom + context->height / 2;
 
         if(x < 0 || y < 0) continue;
-        if(x >= context->width || y >= context->height) continue;
-        frame->data[0][y * frame->linesize[0] + x] = 255;
+        if(x >= this->width || y >= this->height) continue;
+        res[y][x] = 255;
+    }
+
+    return res;
+}
+
+void video_encoder::write_array(np::ndarray& arr){
+    for(int y = 0; y < this->height; y++){
+        for(int x = 0; x < this->width; x++){
+            frame->data[0][y * frame->linesize[0] + x] = p::extract<uint8_t>(arr[y][x]);
+        }
     }
 
     for (int y = 0; y < context->height/2; y++) {
@@ -132,7 +113,11 @@ void video_encoder::write_from_wrapper(particle_wrapper& wrapper, const camera_s
             frame->data[2][y * frame->linesize[2] + x] = 128;
         }
     }
-    write_frame();
+}
+
+void video_encoder::write_from_wrapper(particle_wrapper& wrapper, const camera_settings_t& camera){
+    auto arr = generate_pixels(wrapper, camera);
+    write_array(arr);
 }
 
 void video_encoder::update_pixels(const std::vector<std::vector<uint8_t>>& data){
