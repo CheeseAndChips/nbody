@@ -1,11 +1,17 @@
 USE_CUDA = false
 
+PY_VERSION := $(wordlist 2,4,$(subst ., ,$(shell python3 --version 2>&1)))
+PY_VERSION_MAJOR := $(word 1,${PY_VERSION})
+PY_VERSION_MINOR := $(word 2,${PY_VERSION})
+PY_INC := -I/usr/include/python$(PY_VERSION_MAJOR).$(PY_VERSION_MINOR)/
+PY_LD := -lpython$(PY_VERSION_MAJOR).$(PY_VERSION_MINOR) -l:libboost_python$(PY_VERSION_MAJOR)$(PY_VERSION_MINOR).so -l:libboost_numpy$(PY_VERSION_MAJOR)$(PY_VERSION_MINOR).so
+
 CC = g++
 NVCC = /usr/local/cuda/bin/nvcc
 CUDA_INCLUDE_DIR = /usr/local/cuda/include
-CFLAGS = -fPIC -Wall -std=c++17 -O2 -I/usr/include/python3.10/
+CFLAGS = -fPIC -Wall -std=c++17 -O2 $(PY_INC)
 NVCCFLAGS = -std=c++17 -O2 -lineinfo
-LDFLAGS = -lpython3.10 -l:libboost_python310.so -l:libboost_numpy310.so -lavcodec -lavutil -lpthread
+LDFLAGS = $(PY_LD) -lavcodec -lavutil -lpthread
 SRCDIR = src
 BINDIR = bin
 
