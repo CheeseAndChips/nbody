@@ -27,28 +27,39 @@ def main():
         pset.set_particle(i, nbody.Vec2D((random.random() - .5) * 2, (random.random() - .5) * 2), nbody.Vec2D(0.0, 0.0), 1.0)
         
     delta_target = 1 / fps_target
-    last_fps = 0.0
-
+    last_delta = 1
     last_values = []
     values_to_keep = 10
     limit_fps = False
 
     try:
-        for i in range(fps_target*10):
+        total_frames = fps_target*4
+
+        for i in range(total_frames):
             start = time()
             with pset.exec_while_calculating(settings):
-                # encoder.encode_wrapper(pset, cam)
                 pset.write_to_array(pixels, cam)
+
+                if len(last_values) < values_to_keep:
+                    eta = '-'
+                else:
+                    frames_left = total_frames - i
+                    time_left = round(frames_left * sum(last_values) / values_to_keep)
+                    eta = f'{time_left//60}:{str(time_left%60).zfill(2)}'
+
                 encoder.encode_image(pixels)
-                # pixels.fill(0)
-                cv2.putText(pixels, f'{last_fps:.2f} fps', (0, 50), font, 1, (255, 255, 255), 2)
+                cv2.putText(pixels, f'{1/last_delta:.2f} fps ETA {eta}', (0, 40), font, .6, (255, 255, 255), 1)
                 cv2.imshow('img', pixels)
                 cv2.waitKey(1)
                 if limit_fps and diff > 0:
                     diff = delta_target - (time() - start) - 1e-3
                     sleep(diff)
 
-            last_fps = 1 / (time() - start)
+            last_delta = (time() - start)
+            last_values.append(last_delta)
+            if len(last_values) > values_to_keep:
+                last_values = last_values[1:]
+
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
 
