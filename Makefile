@@ -1,4 +1,4 @@
-USE_CUDA = false
+USE_CUDA = true
 
 SRCDIR := src
 OBJDIR := bin
@@ -10,8 +10,8 @@ NVCC := /usr/local/cuda/bin/nvcc
 CUDA_INCLUDE_DIR := /usr/local/cuda/include
 
 SHAREDFLAGS := -fPIC -Wall -std=c++17 -O2 -shared
-CPPFLAGS = $(SHAREDFLAGS) $(PY_INC)
-NVCCFLAGS = -std=c++17 -O2 -lineinfo $(PY_INC) --compiler-options "$(SHAREDFLAGS)"
+CPPFLAGS = $(SHAREDFLAGS) $(PY_INC) -DBOOST_BIND_GLOBAL_PLACEHOLDERS -DBOOST_ALLOW_DEPRECATED_HEADERS
+NVCCFLAGS = -std=c++17 -O2 -lineinfo $(PY_INC) -DBOOST_BIND_GLOBAL_PLACEHOLDERS -DBOOST_ALLOW_DEPRECATED_HEADERS --compiler-options "$(SHAREDFLAGS)"
 LDFLAGS := -shared
 LDLIBS = $(PY_LD) -lavcodec -lavutil -lpthread
 
