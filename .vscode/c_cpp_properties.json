@@ -4,12 +4,12 @@
         {
             "name": "Cuda C++",
             "defines": ["__CUDACC__", "USING_CUDA"],
-            "includePath": ["/usr/local/cuda/include", "/usr/include/python3.10/"]
+            "includePath": ["/usr/local/cuda/include", "/usr/include/python3.9/"]
         },
         {
             "name": "C++",
             "defines": [],
-            "includePath": ["/usr/include/python3.10/"]
+            "includePath": ["/usr/include/python3.9/"]
         }
     ]
 }
