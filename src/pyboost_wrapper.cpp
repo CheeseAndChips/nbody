@@ -51,5 +51,12 @@ BOOST_PYTHON_MODULE(nbody)
         .def(init<const std::string&, int32_t>())
         .def("do_timestep", &particle_wrapper_cpu::do_timestep)
         .def("set_particle", &particle_wrapper::set_particle_values)
+        .def("get_n", &particle_wrapper_cpu::get_count)
+    ;
+
+    class_<particle_wrapper_gpu, bases<particle_wrapper>, boost::noncopyable>("ParticleWrapperGPU", init<int32_t>())
+        .def("do_timestep", &particle_wrapper_gpu::do_timestep)
+        .def("set_particle", &particle_wrapper_gpu::set_particle_values)
+        .def("get_n", &particle_wrapper_gpu::get_count)
     ;
 }
