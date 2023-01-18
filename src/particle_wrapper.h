@@ -4,6 +4,7 @@
 #include "particle_set.h"
 #include <fstream>
 #include "simulation_util.h"
+#include "simulation_context.h"
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
 
@@ -11,6 +12,7 @@ class particle_wrapper
 {
 protected:
     particle_set_t pset;
+    const simulation_settings_t *settings;
 
 public:
     particle_wrapper(int32_t n);
@@ -25,8 +27,12 @@ public:
     virtual vec2d_t get_particle_position(int32_t i);
 
     virtual void do_timestep(simulation_settings_t& settings) = 0;
+    virtual void wait_for_lock() = 0;
 
     void write_to_array(boost::python::numpy::ndarray &arr, const camera_settings_t &camera);
+    simulation_context_t get_context(const simulation_settings_t &settings) {
+        return simulation_context_t(this, settings);
+    }
 };
 
 #endif

@@ -53,7 +53,11 @@ void particle_wrapper_gpu::do_timestep(simulation_settings_t& settings)
 
 void particle_wrapper_gpu::set_particle_values(int32_t i, const vec2d_t& pos, const vec2d_t& vel, scalar_t mass)
 {
-    wait_for_lock();
+    if(ongoing_calculation) {
+        PyErr_SetString(PyExc_BlockingIOError, "Trying to change particle values with ongoing calculations");
+        return;
+    }
+
     if(this->host_outdated) device_to_host();
     particle_wrapper::set_particle_values(i, pos, vel, mass);
     this->device_outdated = true;
@@ -61,8 +65,7 @@ void particle_wrapper_gpu::set_particle_values(int32_t i, const vec2d_t& pos, co
 
 vec2d_t particle_wrapper_gpu::get_particle_position(int32_t i)
 {
-    wait_for_lock();
-    if(this->host_outdated) device_to_host();
+    if(!this->ongoing_calculation && this->host_outdated) device_to_host();
     return particle_wrapper::get_particle_position(i);
 }
 
@@ -71,6 +74,7 @@ void particle_wrapper_gpu::wait_for_lock()
     if(ongoing_calculation) {
         cudaDeviceSynchronize();
         ongoing_calculation = false;
+        device_to_host();
     }
 }
 

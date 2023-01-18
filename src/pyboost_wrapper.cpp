@@ -4,6 +4,7 @@
 #include "particle_wrapper_cpu.h"
 #include "encoder_util.h"
 #include "particle_wrapper.h"
+#include "simulation_context.h"
 #ifdef USING_CUDA
 #include "particle_wrapper_gpu.h"
 #endif
@@ -44,6 +45,7 @@ BOOST_PYTHON_MODULE(nbody)
 
     class_<particle_wrapper, boost::noncopyable>("ParticleWrapper", boost::python::no_init)
         .def("write_to_array", &particle_wrapper::write_to_array)
+        .def("exec_while_calculating", &particle_wrapper::get_context)
     ;
 
     class_<particle_wrapper_cpu, bases<particle_wrapper>>("ParticleWrapperCPU", init<int32_t, int32_t>())
@@ -51,6 +53,11 @@ BOOST_PYTHON_MODULE(nbody)
         .def("do_timestep", &particle_wrapper_cpu::do_timestep)
         .def("set_particle", &particle_wrapper::set_particle_values)
         .def("get_n", &particle_wrapper_cpu::get_count)
+    ;
+
+    class_<simulation_context_t>("SimulationContext", boost::python::no_init)
+        .def("__enter__", &simulation_context_t::enter_context)
+        .def("__exit__", &simulation_context_t::exit_context)
     ;
 
     #ifdef USING_CUDA

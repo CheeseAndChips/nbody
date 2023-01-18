@@ -18,8 +18,8 @@ def main():
     cam = nbody.CameraSettings(nbody.Vec2D(0, 0), zoom)
     codec = nbody.CodecSettings("libx264", "slow", 0)
     encoder = nbody.VideoEncoder("/home/joris/test.264", width, height, 30, codec)
-    pset = nbody.ParticleWrapperCPU(5000, 4)
-    # pset = nbody.ParticleWrapperGPU(200_000)
+    # pset = nbody.ParticleWrapperCPU(5000, 4)
+    pset = nbody.ParticleWrapperGPU(100_000)
     # pset = nbody.ParticleWrapperGPU(1000)
 
 
@@ -29,21 +29,24 @@ def main():
     delta_target = 1 / fps_target
     last_fps = 0.0
 
+    last_values = []
+    values_to_keep = 10
+    limit_fps = False
+
     try:
         for i in range(fps_target*10):
             start = time()
-            encoder.encode_wrapper(pset, cam)
-            # pset.write_to_array(pixels, cam)
-            # encoder.encode_image(pixels)
-            pixels.fill(0)
-            cv2.putText(pixels, f'{last_fps:.2f} fps', (0, 50), font, 1, (255, 255, 255), 2)
-            pset.do_timestep(settings)
-            cv2.imshow('img', pixels)
-            end = time()
-            diff = delta_target - (end - start) - 1e-3
-            cv2.waitKey(1)
-            if diff > 0:
-                sleep(diff)
+            with pset.exec_while_calculating(settings):
+                # encoder.encode_wrapper(pset, cam)
+                pset.write_to_array(pixels, cam)
+                encoder.encode_image(pixels)
+                # pixels.fill(0)
+                cv2.putText(pixels, f'{last_fps:.2f} fps', (0, 50), font, 1, (255, 255, 255), 2)
+                cv2.imshow('img', pixels)
+                cv2.waitKey(1)
+                if limit_fps and diff > 0:
+                    diff = delta_target - (time() - start) - 1e-3
+                    sleep(diff)
 
             last_fps = 1 / (time() - start)
     except KeyboardInterrupt:

@@ -14,6 +14,7 @@ public:
     particle_wrapper_cpu(const particle_set_t& pset, int32_t threadcnt) : particle_wrapper(pset), threadcnt(threadcnt) { }
 
     void do_timestep(simulation_settings_t& settings);
+    void wait_for_lock() { } // TODO make cpu wrappers work properly with contexts
 private:
     int threadcnt;
 };

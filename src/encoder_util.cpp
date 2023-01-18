@@ -107,6 +107,7 @@ np::ndarray video_encoder::generate_pixels(particle_wrapper& wrapper, const came
     return res;
 }
 
+// TODO make faster
 void video_encoder::write_array(np::ndarray& arr){
     for(int y = 0; y < this->height; y++){
         for(int x = 0; x < this->width; x++){
