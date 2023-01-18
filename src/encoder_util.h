@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include "particle_wrapper.h"
+#include "camera.h"
 #include <boost/python/numpy.hpp>
 
 namespace np = boost::python::numpy;
@@ -26,13 +27,6 @@ struct codec_settings_t {
         use_bitrate(true), codec_name(codec_name), preset(""), crf(-1), bitrate(bitrate) { }
     codec_settings_t(std::string codec_name, std::string preset, int crf) :
         use_bitrate(false), codec_name(codec_name), preset(preset), crf(crf), bitrate(-1) { }
-};
-
-struct camera_settings_t {
-    vec2d_t center;
-    scalar_t zoom;
-    camera_settings_t() : center(vec2d_t(0, 0)), zoom(1.0) { }
-    camera_settings_t(vec2d_t center, scalar_t zoom) : center(center), zoom(zoom) { }
 };
 
 class video_encoder {

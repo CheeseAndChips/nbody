@@ -1,8 +1,11 @@
 #ifndef _PARTICLE_WRAPPER_H
 #define _PARTICLE_WRAPPER_H
+#include "camera.h"
 #include "particle_set.h"
 #include <fstream>
 #include "simulation_util.h"
+#include <boost/python.hpp>
+#include <boost/python/numpy.hpp>
 
 class particle_wrapper
 {
@@ -22,6 +25,8 @@ public:
     virtual vec2d_t get_particle_position(int32_t i);
 
     virtual void do_timestep(simulation_settings_t& settings) = 0;
+
+    void write_to_array(boost::python::numpy::ndarray &arr, const camera_settings_t &camera);
 };
 
 #endif

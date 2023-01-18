@@ -59,7 +59,7 @@ $(OBJDIR)/ec:
 
 $(TARGET): $(OBJS) $(CUDA_OBJS)
 	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
-	stubgen -m nbody --search-path=$(OBJDIR) -o $(OBJDIR)
+	PYTHONPATH=$(shell realpath $(OBJDIR)) stubgen -m nbody -o $(OBJDIR)
 
 $(OBJDIR)/%.cpp.o: $(SRCDIR)/%.cpp
 $(OBJDIR)/%.cpp.o: $(SRCDIR)/%.cpp $(DEPDIR)/%.cu.d

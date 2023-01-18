@@ -16,6 +16,8 @@ private:
     void setup_cuda_memory();
     void host_to_device();
     void device_to_host();
+    void wait_for_lock();
+    bool ongoing_calculation = false;
 
     bool device_outdated = true;
     bool host_outdated = false;

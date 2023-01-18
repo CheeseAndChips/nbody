@@ -72,6 +72,13 @@ video_encoder::video_encoder(const std::string& filename, int width, int height,
         std::cerr << "Could not allocate video frame data" << std::endl;
         exit(1);
     }
+
+    for (int y = 0; y < context->height/2; y++) {
+        for (int x = 0; x < context->width/2; x++) {
+            frame->data[1][y * frame->linesize[1] + x] = 128;
+            frame->data[2][y * frame->linesize[2] + x] = 128;
+        }
+    }
 }
 
 video_encoder::~video_encoder()
@@ -106,31 +113,32 @@ void video_encoder::write_array(np::ndarray& arr){
             frame->data[0][y * frame->linesize[0] + x] = p::extract<uint8_t>(arr[y][x]);
         }
     }
-
-    for (int y = 0; y < context->height/2; y++) {
-        for (int x = 0; x < context->width/2; x++) {
-            frame->data[1][y * frame->linesize[1] + x] = 128;
-            frame->data[2][y * frame->linesize[2] + x] = 128;
-        }
-    }
+    write_frame();
 }
 
 void video_encoder::write_from_wrapper(particle_wrapper& wrapper, const camera_settings_t& camera){
-    auto arr = generate_pixels(wrapper, camera);
-    write_array(arr);
+    for(int y = 0; y < this->height; y++){
+        for(int x = 0; x < this->width; x++){
+            frame->data[0][y * frame->linesize[0] + x] = 0;
+        }
+    }
+
+    for(int i = 0; i < wrapper.get_count(); i++){
+        auto pos = wrapper.get_particle_position(i);
+        int x = (pos.x - camera.center.x) * camera.zoom + width / 2;
+        int y = (pos.y - camera.center.y) * camera.zoom + height / 2;
+
+        if(x < 0 || y < 0) continue;
+        if(x >= width || y >= height) continue;
+        frame->data[0][y * frame->linesize[0] + x] = 255;
+    }
+    write_frame();
 }
 
 void video_encoder::update_pixels(const std::vector<std::vector<uint8_t>>& data){
     for(int y = 0; y < context->height; y++){
         for(int x = 0; x < context->width; x++){
             frame->data[0][y * frame->linesize[0] + x] = data[x][y];
-        }
-    }
-
-    for (int y = 0; y < context->height/2; y++) {
-        for (int x = 0; x < context->width/2; x++) {
-            frame->data[1][y * frame->linesize[1] + x] = 128;
-            frame->data[2][y * frame->linesize[2] + x] = 128;
         }
     }
 }

@@ -16,3 +16,27 @@ vec2d_t particle_wrapper::get_particle_position(int32_t i)
 {
     return pset.positions[i];
 }
+
+void particle_wrapper::write_to_array(boost::python::numpy::ndarray &arr, const camera_settings_t &camera) {
+    auto shape = arr.get_shape();
+    auto height = shape[0];
+    auto width = shape[1];
+
+    if(arr.get_nd() != 2) {
+        std::cerr << "Bad array shape" << std::endl;
+        exit(1);
+    }
+
+    char *data = arr.get_data();
+    memset(data, 0, height*width);
+
+    for(int i = 0; i < get_count(); i++){
+        auto pos = get_particle_position(i);
+        int x = (pos.x - camera.center.x) * camera.zoom + width / 2;
+        int y = (pos.y - camera.center.y) * camera.zoom + height / 2;
+
+        if(x < 0 || y < 0) continue;
+        if(x >= width || y >= height) continue;
+        arr[y][x] = 255;
+    }
+}
