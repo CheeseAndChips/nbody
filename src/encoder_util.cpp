@@ -107,11 +107,21 @@ np::ndarray video_encoder::generate_pixels(particle_wrapper& wrapper, const came
     return res;
 }
 
-// TODO make faster
 void video_encoder::write_array(np::ndarray& arr){
+    if(arr.get_nd() != 2) {
+        std::cerr << "Invalid array strides" << std::endl;
+        exit(1);
+    }
+
+    auto raw_data = arr.get_data();
+    auto strides = arr.get_strides();
+
+    auto st1 = strides[0];
+    auto st2 = strides[1];
+
     for(int y = 0; y < this->height; y++){
         for(int x = 0; x < this->width; x++){
-            frame->data[0][y * frame->linesize[0] + x] = p::extract<uint8_t>(arr[y][x]);
+            frame->data[0][y * frame->linesize[0] + x] = *(raw_data + y * st1 + x * st2);
         }
     }
     write_frame();
