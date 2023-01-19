@@ -7,6 +7,8 @@ import itertools
 import cProfile
 
 def main():
+    random.seed('lol troll')
+
     fps_target = 30
     width = 1600
     height = 900

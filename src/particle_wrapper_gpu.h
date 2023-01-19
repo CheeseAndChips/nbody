@@ -40,6 +40,16 @@ public:
     vec2d_t get_particle_position(int32_t i);
 
     void do_timestep(simulation_settings_t& settings);
+
+    void init_context(simulation_settings_t &settings) {
+        particle_wrapper::init_context(settings);    
+        this->do_timestep(settings);
+    }
+
+    void exit_context() {
+        wait_for_lock();
+        particle_wrapper::exit_context();
+    }
 };
 
 #endif
