@@ -5,7 +5,7 @@
 struct camera_settings_t {
     vec2d_t center;
     scalar_t zoom;
-    camera_settings_t() : center(vec2d_t(0, 0)), zoom(1.0) { }
+    camera_settings_t() : center(vec2d_t((scalar_t)0, (scalar_t)0)), zoom(1.0) { }
     camera_settings_t(vec2d_t center, scalar_t zoom) : center(center), zoom(zoom) { }
 };
 

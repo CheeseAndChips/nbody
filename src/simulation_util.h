@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <iostream>
 
-#ifdef __CUDACC__
+#ifdef USING_CUDA
 #define THREAD_COUNT 256
 
 #include <cuda.h>
@@ -22,9 +22,13 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 }
 #endif
 
-#ifndef __CUDACC__
+#ifndef __device__
 #define __device__
+#endif
+#ifndef __global__
 #define __global__
+#endif
+#ifndef __host__
 #define __host__
 #endif
 
